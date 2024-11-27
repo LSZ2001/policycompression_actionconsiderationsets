@@ -14,7 +14,7 @@ addpath(genpath(main_folder))
 ```
 The code runs on Matlab version R2023a. 
 
-## Online experiments
+## Online experiment
 - Experiment: https://gershmanlab.com/experiments/shuze/bandits_approx/experiment/index_exp1.html
 
 ## Main folder
