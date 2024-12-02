@@ -2,7 +2,7 @@
 
  Code for the manuscript "Action subsampling supports policy compression in large action spaces" (2024). The authors are Shuze Liu and Samuel J. Gershman. 
 
-Preprint link forthcoming...
+Preprint link: https://osf.io/preprints/psyarxiv/bjt7d
 - **Bold** words are .m filenames.
 - *Italicized* words are .mat filenames or directory folder names.
 
@@ -33,3 +33,5 @@ The code runs on Matlab version R2023a.
 ## *saved_files* subfolder
 - It contains saved simulation files. These simulation files are created by commented-out lines in **manuscript_allfigures.m**.
 
+## *experiment* subfolder
+- It contains the Javascript code for the experiment link above. 
