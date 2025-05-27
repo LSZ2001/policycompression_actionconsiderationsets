@@ -1,4 +1,3 @@
-
 clear all; close all;
 % base_folder = 'C:\Users\liu_s\policycompression_actionconsiderationsets';
 % cd(base_folder)
@@ -105,18 +104,24 @@ saveas(gca, figpath+'FigS6.fig')
 exportgraphics(gcf,figpath+'FigS6.png','Resolution',png_dpi);
 exportgraphics(gcf,figpath+'FigS6.pdf',"ContentType","vector");
 
-%% Figure S7: P(a) for each participant
-FigureS7(exp1, cmap, [50,50,1000,600])
+%% Figure S7: I(S;A) distribution for each Na
+ks_test_results = FigureS7(exp1, [50,50,900,600]);
 saveas(gca, figpath+'FigS7.fig')
 exportgraphics(gcf,figpath+'FigS7.png','Resolution',png_dpi);
 exportgraphics(gcf,figpath+'FigS7.pdf',"ContentType","vector");
 
-%% Figure S8: Noisy Q values simulations
-% noisyQ_simulations(exp1) % Save the simulation files. Takes some time.
-FigureS8(cmap2, [1,1,1200,600])
+%% Figure S8: P(a) for each participant
+FigureS8(exp1, cmap, [50,50,1000,600])
 saveas(gca, figpath+'FigS8.fig')
 exportgraphics(gcf,figpath+'FigS8.png','Resolution',png_dpi);
 exportgraphics(gcf,figpath+'FigS8.pdf',"ContentType","vector");
+
+%% Figure S9: Noisy Q values simulations
+% noisyQ_simulations(exp1) % Save the simulation files. Takes some time.
+FigureS9(cmap2, [1,1,1200,600])
+saveas(gca, figpath+'FigS9.fig')
+exportgraphics(gcf,figpath+'FigS9.png','Resolution',png_dpi);
+exportgraphics(gcf,figpath+'FigS9.pdf',"ContentType","vector");
 
 
 %% Helper functions
@@ -926,10 +931,54 @@ function [] = FigureS6(exp1_rewardcutoff, cmap, figsize)
 
 end
 
+%% Fig S7: I(S;A) distribution for each Na
+function [ks_test_results] = FigureS7(exp, figsize)
+    n_actions_chosen = exp.BehavioralStats.n_actions_chosen_bycond;
+    n_actions_max = max(n_actions_chosen(:));
+    [n_subjects,n_conds] = size(n_actions_chosen);
+    N_a_histcounts = histcounts(n_actions_chosen(:));
+    N_a_histcounts_cumsum = [0,cumsum(N_a_histcounts)];
+    
+    % Test for uniformity of I(S;A) within each N_a. 
+    complexity = exp.BehavioralStats.complexity_bycond;
+    complexity_flat = complexity(:);
+    n_actions_chosen_flat = n_actions_chosen(:);
+    ks_test_results = zeros(n_actions_max,1);
+    ks_test_results(:)= nan; 
+    n_dpts = zeros(n_actions_max,1);
+    for n_a = 2:n_actions_max
+        relevant_subjconds = (n_actions_chosen_flat==n_a);
+        relevant_complexity = complexity_flat(relevant_subjconds);
+        test_cdf = makedist('Uniform','Lower',0,'Upper',log2(n_a));
+        %test_cdf = makedist('Uniform','Lower',min(relevant_complexity),'Upper',max(relevant_complexity));
+        [h,p] = kstest(relevant_complexity,'CDF',test_cdf);
+        n_dpts(n_a) = length(relevant_complexity);
+        ks_test_results(n_a) = p;
+    end
+    
+    % Figure
+    figure("Position",figsize);
+    tiledlayout(2,3,'Padding', 'compact', 'TileSpacing', 'compact');
+    for n_a = 2:n_actions_max
+        relevant_subjconds = (n_actions_chosen_flat==n_a);
+        relevant_complexity = complexity_flat(relevant_subjconds);
+        nexttile; hold on;
+        histogram(relevant_complexity, 0:(log2(n_a)/20):log2(n_a), 'FaceColor', 'k', 'FaceAlpha',0.2)
+        title("Na = "+n_a);
+        %title("$N_a = "+n_a+"$","interpreter","latex");
+        xlim([0, log2(n_a)]);
+        if(n_a==2 || n_a==5)
+            ylabel("Frequency")
+        end
+        if(n_a>=5)
+            xlabel("Policy complexity (bits)")
+        end
+    end
+end
 
-%% Fig S7: P(a) of all subjects
+%% Fig S8: P(a) of all subjects
 
-function [] = FigureS7(exp, cmap, figsize)
+function [] = FigureS8(exp, cmap, figsize)
     markersize = 10; linewidth=1.5;
 
     Q = exp.optimal_sol.Q;
@@ -1068,7 +1117,7 @@ function [] = noisyQ_simulations(exp1, gaussian_stds, n_sims, beta_set, rng_seed
 
 end
 
-function [] = FigureS8(cmap2, figsize,save_path)
+function [] = FigureS9(cmap2, figsize,save_path)
     if(nargin==2)
         save_path="saved_files\";
     end
